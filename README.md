@@ -1,2 +1,2 @@
 # GymCapacityTracker
-Measures optimal hours to train by storing gym capacity over time
+Gets the members currently in a pure gym Location and tracks it over time. 
