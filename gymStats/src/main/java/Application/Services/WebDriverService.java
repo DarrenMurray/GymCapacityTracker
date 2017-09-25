@@ -1,33 +1,70 @@
 package Application.Services;
 
+import Application.Models.GymCapacity;
+import Application.Repository.ICapacityRepository;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.concurrent.TimeUnit;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+@Service
 public class WebDriverService
 {
-   private WebDriver webDriver;
-   private String username;
-   private String userPassword;
-   private boolean loggedOut;
-
-   public int getMembers()
+   public WebDriverService()
    {
+      propertiesService = new PropertiesService();
       System.setProperty("webdriver.chrome.driver", propertiesService.getDriverPath());
+      webDriver = new ChromeDriver();
+      capacityChecker();
+   }
 
-      if(loggedOut)
+   private void capacityChecker()
+   {
+      final Runnable checker = new Runnable()
+      {
+         public void run()
+         {
+            capacityRepository.save(getMembers());
+            System.out.println("test");
+         }
+      };
+
+      final ScheduledFuture<?> capacityHandler = scheduler.scheduleAtFixedRate(checker, 1, 5, SECONDS);
+
+      scheduler.schedule(new Runnable()
+      {
+         public void run()
+         {
+            capacityHandler.cancel(true);
+         }
+      }, 60 * 60, SECONDS);
+   }
+
+   private GymCapacity getMembers()
+   {
+      GymCapacity gymCapacity = new GymCapacity();
+      if (!webDriver.getCurrentUrl().equals("https://www.puregym.com/members/"))
          login();
 
       // Explicit wait
-      webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+      webDriver.manage().timeouts().implicitlyWait(10, SECONDS);
 
-      WebElement membersInGymElement = webDriver.findElement(By.xpath("//*[@id=\"main-content\"]/div[2]/div/div/div/div[1]/div/div/div/div/div[2]/div/div[1]/div/p[1]/span"));
-      return matchMembers(membersInGymElement.getText());
+      WebElement membersInGymElement = webDriver.findElement(By.xpath("//*[@id=\"main-content\"]/div[2]/div/div/div/div[1]/div/div/div/div/div[2]/div/div[1]/div"));
+      gymCapacity.setCurrentUsers(matchMembers(membersInGymElement.getText()));
+      gymCapacity.setTimestamp(LocalDateTime.now().toString());
+      return gymCapacity;
    }
 
    private static int matchMembers(String membersString)
@@ -35,16 +72,15 @@ public class WebDriverService
       int result = 0;
       Pattern pattern = Pattern.compile("\\d+");
       Matcher matcher = pattern.matcher(membersString);
-      if (matcher.find()) {
+      if (matcher.find())
+      {
          result = Integer.parseInt(matcher.group());
       }
       return result;
-
    }
 
    private void login()
    {
-      webDriver = new ChromeDriver();
       webDriver.get("https://www.puregym.com/login/");
       WebElement email = webDriver.findElement(By.id("email"));
       WebElement password = webDriver.findElement(By.id("pin"));
@@ -52,10 +88,15 @@ public class WebDriverService
       email.sendKeys(propertiesService.getUser());
       password.sendKeys(propertiesService.getPassword());
       loginButton.click();
-
    }
 
-@Autowired
-private PropertiesService propertiesService;
+   private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+   private WebDriver webDriver;
+   private String username;
+   private String userPassword;
+
+   private PropertiesService propertiesService;
+   @Autowired
+   private ICapacityRepository capacityRepository;
 
 }

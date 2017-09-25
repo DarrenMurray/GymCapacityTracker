@@ -1,17 +1,19 @@
 package Application.Services;
 
+import org.springframework.stereotype.Service;
+
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Created by darren.murray on 20/09/2017.
- */
+@Service
 public class PropertiesService
 {
     public PropertiesService()
     {
-        try {
-            FileInputStream config = new FileInputStream("application.properties");
+        try
+        {
+            InputStream config = getClass().getResourceAsStream("/application.properties");
             properties = new Properties();
             properties.load(config);
         }
@@ -39,5 +41,5 @@ public class PropertiesService
     private String user;
     private String password;
     private String driverPath;
-   private Properties properties;
+    private Properties properties;
 }
