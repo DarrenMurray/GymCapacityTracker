@@ -24,3 +24,6 @@ Extract the downloaded archive file to desired system location
 Create a symlink of PhantomJS binary file to systems bin dirctory:
 
 `sudo ln -s /usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/`
+
+Verify PhantomJS Version
+`phantomjs --version`
