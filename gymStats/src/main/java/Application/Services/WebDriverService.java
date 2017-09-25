@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,9 @@ public class WebDriverService
    {
       propertiesService = new PropertiesService();
       System.setProperty("webdriver.chrome.driver", propertiesService.getDriverPath());
-      webDriver = new ChromeDriver();
+      ChromeOptions options = new ChromeOptions();
+      options.addArguments("--headless");
+      webDriver = new ChromeDriver(options);
       capacityChecker();
    }
 
@@ -37,11 +40,10 @@ public class WebDriverService
          public void run()
          {
             capacityRepository.save(getMembers());
-            System.out.println("test");
          }
       };
 
-      final ScheduledFuture<?> capacityHandler = scheduler.scheduleAtFixedRate(checker, 1, 5, SECONDS);
+      final ScheduledFuture<?> capacityHandler = scheduler.scheduleAtFixedRate(checker, 1, 30, MINUTES);
 
       scheduler.schedule(new Runnable()
       {
@@ -92,9 +94,6 @@ public class WebDriverService
 
    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
    private WebDriver webDriver;
-   private String username;
-   private String userPassword;
-
    private PropertiesService propertiesService;
    @Autowired
    private ICapacityRepository capacityRepository;
