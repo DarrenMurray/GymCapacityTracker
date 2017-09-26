@@ -10,7 +10,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -66,7 +66,7 @@ public class WebDriverService
 
       WebElement membersInGymElement = webDriver.findElement(By.xpath("//*[@id=\"main-content\"]/div[2]/div/div/div/div[1]/div/div/div/div/div[2]/div/div[1]/div"));
       gymCapacity.setCurrentUsers(matchMembers(membersInGymElement.getText()));
-      gymCapacity.setTimestamp(LocalDateTime.now().toString());
+      gymCapacity.setTimestamp(ZonedDateTime.now().toString());
       return gymCapacity;
    }
 
