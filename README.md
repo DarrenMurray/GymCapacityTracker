@@ -10,5 +10,6 @@ Add your login credentials to application.properties.
 gym.prop2=purepin`
 
 Set the path to chrome web driver
+
 Set MongoDB connectionString
 
