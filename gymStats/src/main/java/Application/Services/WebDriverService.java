@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -51,7 +52,7 @@ public class WebDriverService
          {
             capacityHandler.cancel(true);
          }
-      }, 60 * 60, SECONDS);
+      }, 30, DAYS);
    }
 
    private GymCapacity getMembers()
