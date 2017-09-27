@@ -1,5 +1,5 @@
 # GymCapacityTracker
-Gets the members currently in a pure gym Location and tracks it over time. 
+Gets the members currently in a pure gym Location and builds a chart of gym usage over time
 
 ## Setup
 
@@ -13,3 +13,5 @@ Set the path to chrome web driver
 
 Set MongoDB connectionString
 
+### Chart
+![alt text](https://github.com/DarrenMurray/GymCapacityTracker/blob/master/CapacityGraph.png)
