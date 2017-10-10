@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,6 +84,8 @@ public class WebDriverService
          System.out.println("\n **** \n Retrieved Members Value:" + gymCapacity.getCurrentUsers() + "At: " + gymCapacity.getTimestamp() + "\n **** \n");
       }
 
+      refresh();
+
       return gymCapacity;
    }
 
@@ -129,6 +132,18 @@ public class WebDriverService
       loginButton.click();
    }
 
+   private void refresh()
+   {
+       webDriver.navigate().refresh();
+       webDriver.manage().timeouts().implicitlyWait(3, SECONDS);
+   }
+
+    private void logOut()
+    {
+        WebElement logout = webDriver.findElement(By.id("loginStatus"));
+        logout.click();
+        webDriver.manage().timeouts().implicitlyWait(3, SECONDS);
+    }
    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
    private WebDriver webDriver;
 
