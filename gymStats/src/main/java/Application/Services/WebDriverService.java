@@ -10,7 +10,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -41,6 +41,7 @@ public class WebDriverService
          public void run()
          {
             capacityRepository.save(getMembers());
+            System.out.println("Members Retrieved");
          }
       };
 
@@ -50,23 +51,38 @@ public class WebDriverService
       {
          public void run()
          {
+            System.out.print("\n ***\n \t Stopping service \n *** \n");
             capacityHandler.cancel(true);
          }
-      }, 30, DAYS);
+      }, 40, DAYS);
    }
 
    private GymCapacity getMembers()
    {
       GymCapacity gymCapacity = new GymCapacity();
-      if (!webDriver.getCurrentUrl().equals("https://www.puregym.com/members/"))
+      String currentUrl = getCurrentUrl();
+      if (!currentUrl.equals("https://www.puregym.com/members/"))
          login();
 
       // Explicit wait
       webDriver.manage().timeouts().implicitlyWait(10, SECONDS);
 
-      WebElement membersInGymElement = webDriver.findElement(By.xpath("//*[@id=\"main-content\"]/div[2]/div/div/div/div[1]/div/div/div/div/div[2]/div/div[1]/div"));
-      gymCapacity.setCurrentUsers(matchMembers(membersInGymElement.getText()));
-      gymCapacity.setTimestamp(ZonedDateTime.now().toString());
+      WebElement membersInGymElement = null;
+      try
+      {
+         membersInGymElement = webDriver.findElement(By.xpath("//*[@id=\"main-content\"]/div[2]/div/div/div/div[1]/div/div/div/div/div[2]/div/div[1]/div"));
+      }
+      catch (Exception e)
+      {
+         System.out.print("unable to find element" + "\n\n" + e);
+      }
+      if (membersInGymElement != null)
+      {
+         gymCapacity.setCurrentUsers(matchMembers(membersInGymElement.getText()));
+         gymCapacity.setTimestamp(LocalDateTime.now().toString());
+         System.out.println("\n **** \n Retrieved Members Value:" + gymCapacity.getCurrentUsers() + "At: " + gymCapacity.getTimestamp() + "\n **** \n");
+      }
+
       return gymCapacity;
    }
 
@@ -82,9 +98,29 @@ public class WebDriverService
       return result;
    }
 
+   private String getCurrentUrl(){
+      String currentUrl = "";
+      try
+      {
+      currentUrl = webDriver.getCurrentUrl();
+      }
+      catch (Exception e)
+      {
+         System.out.println("Failed to get current url" + "\n\n" + e);
+      }
+      return currentUrl;
+   }
+
    private void login()
    {
-      webDriver.get("https://www.puregym.com/login/");
+      try
+      {
+         webDriver.get("https://www.puregym.com/login/");
+      }
+      catch (Exception e)
+      {
+         System.out.println("Failed to go to Login Page" + "\n\n" + e);
+      }
       WebElement email = webDriver.findElement(By.id("email"));
       WebElement password = webDriver.findElement(By.id("pin"));
       WebElement loginButton = webDriver.findElement(By.id("login-submit"));
@@ -95,6 +131,7 @@ public class WebDriverService
 
    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
    private WebDriver webDriver;
+
    private PropertiesService propertiesService;
    @Autowired
    private ICapacityRepository capacityRepository;
